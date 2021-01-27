@@ -27,6 +27,10 @@ inputs:
     descrtiption: 'Should the slack notification include individual job status and run times'
     required: true
     default: true
+  message:
+    description: 'a message for show'
+    required: false
+
 runs:
   using: 'node12'
   main: 'dist/index.js'

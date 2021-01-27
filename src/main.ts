@@ -62,6 +62,7 @@ async function main(){
   const slack_name: string = core.getInput('name')
   const slack_icon: string = core.getInput('icon_url')
   const slack_emoji: string = core.getInput('icon_emoji') // https://www.webfx.com/tools/emoji-cheat-sheet/
+  const slack_message: string = core.getInput('text')
   // Force as secret, forces *** when trying to print or log values
   core.setSecret(github_token)
   core.setSecret(webhook_url)
@@ -123,22 +124,24 @@ async function main(){
 
   if(workflow_success){
     workflow_color = "good"
-    workflow_msg = "Success:"
+    workflow_msg = ":white_check_mark: Success:"
   }else if(workflow_failure){
     workflow_color = "danger"
-    workflow_msg = "Failed:"
+    workflow_msg = ":no_entry_sign: Failed:"
   }else{
     workflow_color = "warning"
-    workflow_msg = "Cancelled:"
+    workflow_msg = ":bangbang: Cancelled:"
   }
 
   // Payload Formatting Shortcuts
   const workflow_duration: string = job_duration(new Date(workflow_run.data.created_at), new Date(workflow_run.data.updated_at))
+  const message: string = slack_message.length > 0 ? `Message: ${slack_message}\n` : ``;
   const repo_url: string = "<https://github.com/" + workflow_run.data.repository.full_name + "|*"+ workflow_run.data.repository.full_name +"*>"
   const branch_url: string = "<https://github.com/"+workflow_run.data.repository.full_name+"/tree/"+branch+"|*"+branch+"*>"
   const workflow_run_url: string = "<"+workflow_run.data.html_url+"|#"+workflow_run.data.run_number+">"
+  const commit_url: string = `<${workflow_run.data.repository.commits_url}>|*${workflow_run.data.head_commit.id}*`
   // Example: Success: AnthonyKinson's `push` on `master` for pull_request
-  let status_string: string = workflow_msg+" "+actor+"'s `"+event+"` on `"+branch_url+"`\n"
+  let status_string: string = workflow_msg+" "+actor+"'s `"+event+"` on `"+branch_url+"`"+`@${commit_url}\n`
   // Example: Workflow: My Workflow #14 completed in `1m 30s`
   const details_string: string = "Workflow: "+workflow_name+" "+workflow_run_url+" completed in `"+ workflow_duration+"`"
 
@@ -160,7 +163,7 @@ async function main(){
   const slack_attachment: SlackAttachment = {
     mrkdwn_in: ["text"],
     color: workflow_color,
-    text: status_string + details_string,
+    text: status_string + message + details_string,
     footer: repo_url,
     footer_icon: "https://github.githubassets.com/favicon.ico",
     fields: (include_jobs == 'true') ? job_fields : []
