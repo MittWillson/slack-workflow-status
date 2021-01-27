@@ -3459,6 +3459,7 @@ async function main() {
     // Example: Success: AnthonyKinson's `push` on `master` for pull_request
     let status_string = workflow_msg + " " + actor + "'s `" + event + "` on `" + branch_url + "`" + `@${commit_url}\n`;
     // Example: Workflow: My Workflow #14 completed in `1m 30s`
+    const commit_log = `Commit log: ${workflow_run.data.head_commit.message}\n`;
     const details_string = "Workflow: " + workflow_name + " " + workflow_run_url + " completed in `" + workflow_duration + "`";
     // Build Pull Request string if required
     let pull_requests = "";
@@ -3476,7 +3477,7 @@ async function main() {
     const slack_attachment = {
         mrkdwn_in: ["text"],
         color: workflow_color,
-        text: status_string + message + details_string,
+        text: status_string + message + commit_log + details_string,
         footer: repo_url,
         footer_icon: "https://github.githubassets.com/favicon.ico",
         fields: (include_jobs == 'true') ? job_fields : []
